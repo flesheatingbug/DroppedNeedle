@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-svelte';
 
 const h = vi.hoisted(() => ({
 	data: {
-		api_url: 'https://musicbrainz.org/ws/2',
+		api_url: 'http://192.168.1.50:5000/ws/2',
 		rate_limit: 1.0,
 		concurrent_searches: 6,
 		clamped_to_official_limits: false
@@ -43,7 +43,7 @@ describe('SettingsMusicBrainz three-way source picker', () => {
 	beforeEach(() => {
 		h.testResult = null;
 		setData({
-			api_url: 'https://musicbrainz.org/ws/2',
+			api_url: 'http://192.168.1.50:5000/ws/2',
 			rate_limit: 1.0,
 			concurrent_searches: 6,
 			clamped_to_official_limits: false

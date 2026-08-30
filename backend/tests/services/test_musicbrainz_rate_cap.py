@@ -7,14 +7,14 @@ from api.v1.schemas.settings import (
     _OFFICIAL_MB_CONCURRENT_SEARCHES,
 )
 
-OFFICIAL = "https://musicbrainz.org/ws/2"
+OFFICIAL = "http://192.168.1.50:5000/ws/2"
 MIRROR = "https://mirror.example.com/ws/2"
 
 
 class TestIsOfficialMusicBrainz:
 
     def test_official_https(self):
-        assert is_official_musicbrainz("https://musicbrainz.org/ws/2") is True
+        assert is_official_musicbrainz("http://192.168.1.50:5000/ws/2") is True
 
     def test_official_http(self):
         assert is_official_musicbrainz("http://musicbrainz.org/ws/2") is True
@@ -26,10 +26,10 @@ class TestIsOfficialMusicBrainz:
         assert is_official_musicbrainz("https://MUSICBRAINZ.ORG/ws/2") is True
 
     def test_official_trailing_slash(self):
-        assert is_official_musicbrainz("https://musicbrainz.org/ws/2/") is True
+        assert is_official_musicbrainz("http://192.168.1.50:5000/ws/2/") is True
 
     def test_official_with_spaces(self):
-        assert is_official_musicbrainz("  https://musicbrainz.org/ws/2  ") is True
+        assert is_official_musicbrainz("  http://192.168.1.50:5000/ws/2  ") is True
 
     def test_custom_mirror(self):
         assert is_official_musicbrainz("https://my-mirror.example.com/ws/2") is False
@@ -51,7 +51,7 @@ class TestMusicBrainzSettingsClamping:
 
     def test_official_url_clamps_rate_limit(self):
         settings = MusicBrainzConnectionSettings(
-            api_url="https://musicbrainz.org/ws/2",
+            api_url="http://192.168.1.50:5000/ws/2",
             rate_limit=10.0,
             concurrent_searches=6,
         )
@@ -59,7 +59,7 @@ class TestMusicBrainzSettingsClamping:
 
     def test_official_url_clamps_concurrent_searches(self):
         settings = MusicBrainzConnectionSettings(
-            api_url="https://musicbrainz.org/ws/2",
+            api_url="http://192.168.1.50:5000/ws/2",
             rate_limit=1.0,
             concurrent_searches=20,
         )
@@ -67,7 +67,7 @@ class TestMusicBrainzSettingsClamping:
 
     def test_official_url_clamps_both(self):
         settings = MusicBrainzConnectionSettings(
-            api_url="https://musicbrainz.org/ws/2",
+            api_url="http://192.168.1.50:5000/ws/2",
             rate_limit=50.0,
             concurrent_searches=30,
         )
@@ -76,7 +76,7 @@ class TestMusicBrainzSettingsClamping:
 
     def test_official_url_does_not_increase_low_values(self):
         settings = MusicBrainzConnectionSettings(
-            api_url="https://musicbrainz.org/ws/2",
+            api_url="http://192.168.1.50:5000/ws/2",
             rate_limit=0.5,
             concurrent_searches=3,
         )
@@ -96,7 +96,7 @@ class TestMusicBrainzSettingsClamping:
         settings = MusicBrainzConnectionSettings()
         assert settings.rate_limit == 1.0
         assert settings.concurrent_searches == 6
-        assert settings.api_url == "https://musicbrainz.org/ws/2"
+        assert settings.api_url == "http://192.168.1.50:5000/ws/2"
 
 
 class TestInstanceId:

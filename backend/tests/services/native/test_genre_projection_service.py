@@ -130,7 +130,7 @@ def test_official_asset_is_versioned_and_complete() -> None:
             / "library_management_genres.json"
         ).read_text(encoding="utf-8")
     )
-    assert asset["source"] == "https://musicbrainz.org/ws/2/genre/all?fmt=txt"
+    assert asset["source"] == "http://192.168.1.50:5000/ws/2/genre/all?fmt=txt"
     assert asset["retrieved_at"] == "2026-07-21"
     assert normalizer.vocabulary_size > 2100
 

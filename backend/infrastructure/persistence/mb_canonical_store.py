@@ -35,7 +35,7 @@ from infrastructure.persistence._database import PersistenceBase
 
 logger = logging.getLogger(__name__)
 
-OFFICIAL_MB_API_BASE = "https://musicbrainz.org/ws/2"
+OFFICIAL_MB_API_BASE = "http://192.168.1.50:5000/ws/2"
 
 _SOURCE_MB_RECORDING_LOOKUP = "mb-recording-lookup"
 

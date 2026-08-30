@@ -815,7 +815,7 @@ class SecuritySettings(AppStruct):
 
 
 class MusicBrainzConnectionSettings(AppStruct):
-    api_url: str = "http://192.168.1.100:5000/ws/2"
+    api_url: str = "http://192.168.1.50:5000/ws/2"
     rate_limit: float = 1.0
     concurrent_searches: int = 6
     # Surfaced on the save/settings response: True when the official-host clamp
@@ -827,7 +827,7 @@ class MusicBrainzConnectionSettings(AppStruct):
     def __post_init__(self) -> None:
         self.api_url = self.api_url.strip()
         if not self.api_url or not self.api_url.startswith(("http://", "https://")):
-            self.api_url = "https://musicbrainz.org/ws/2"
+            self.api_url = "http://192.168.1.50:5000/ws/2"
         self.api_url = self.api_url.rstrip("/")
         self.clamped_to_official_limits = False
         if is_official_musicbrainz(self.api_url):

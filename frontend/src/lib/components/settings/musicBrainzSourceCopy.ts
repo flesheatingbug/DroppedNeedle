@@ -141,4 +141,4 @@ export const CLAMPED_WARNING =
 
 export const UNLIMITED_RATE_LABEL = 'Unlimited';
 
-export const OFFICIAL_ENDPOINT_URL = 'https://musicbrainz.org/ws/2';
+export const OFFICIAL_ENDPOINT_URL = 'http://192.168.1.50:5000/ws/2';

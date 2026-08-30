@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 # every discover section falls back to MusicBrainz (1/s) at once and they mutually starve.
 # On timeout the section still renders with the release-level cover fallback.
 _MB_RESOLVE_BUDGET_SECONDS = 15
+_MB_RESOLVE_CONCURRENCY = 5
 
 
 class WeeklyExplorationService:
@@ -36,6 +37,7 @@ class WeeklyExplorationService:
         # Use the requesting user's request-scoped client when provided (Phase 5);
         # never the global singleton's identity.
         repo = lb_repo or self._lb_repo
+
         try:
             playlists = await repo.get_recommendation_playlists(username)
             if not playlists:
@@ -58,6 +60,7 @@ class WeeklyExplorationService:
                 for track in playlist.tracks
                 if track.recording_mbid
             ]
+
             try:
                 recording_to_rg = await repo.get_recording_release_groups_batch(
                     recording_ids
@@ -67,38 +70,61 @@ class WeeklyExplorationService:
             except Exception:  # noqa: BLE001 - missing metadata falls back to MB
                 recording_to_rg = {}
 
-            unresolved_release_ids = list({
-                track.caa_release_mbid
-                for track in playlist.tracks
-                if track.caa_release_mbid
-                and not (
-                    track.recording_mbid
-                    and recording_to_rg.get(track.recording_mbid)
-                )
-            })
+            unresolved_release_ids = list(
+                {
+                    track.caa_release_mbid
+                    for track in playlist.tracks
+                    if track.caa_release_mbid
+                    and not (
+                        track.recording_mbid
+                        and recording_to_rg.get(track.recording_mbid)
+                    )
+                }
+            )
+
             try:
+                sem = asyncio.Semaphore(_MB_RESOLVE_CONCURRENCY)
+
+                async def resolve_release_group(release_id: str):
+                    async with sem:
+                        try:
+                            return await self._mb_repo.get_release_group_id_from_release(
+                                release_id
+                            )
+                        except Exception:
+                            return None
+
                 rg_results = await asyncio.wait_for(
                     asyncio.gather(
                         *(
-                            self._mb_repo.get_release_group_id_from_release(release_id)
+                            resolve_release_group(release_id)
                             for release_id in unresolved_release_ids
-                        ),
-                        return_exceptions=True,
+                        )
                     ),
                     timeout=_MB_RESOLVE_BUDGET_SECONDS,
                 )
             except Exception:  # noqa: BLE001 - MB starved, use release-level covers
-                logger.warning("Weekly exploration RG resolution exceeded its budget; using release covers")
+                logger.warning(
+                    "Weekly exploration RG resolution exceeded its budget; "
+                    "using release covers"
+                )
                 rg_results = []
+
             release_to_rg = {
                 release_id: release_group_id
-                for release_id, release_group_id in zip(unresolved_release_ids, rg_results)
+                for release_id, release_group_id in zip(
+                    unresolved_release_ids, rg_results
+                )
                 if isinstance(release_group_id, str) and release_group_id
             }
 
             tracks: list[WeeklyExplorationTrack] = []
+
             for track in playlist.tracks:
-                artist_mbid = track.artist_mbids[0] if track.artist_mbids else None
+                artist_mbid = (
+                    track.artist_mbids[0] if track.artist_mbids else None
+                )
+
                 release_group_mbid = (
                     recording_to_rg.get(track.recording_mbid, "")
                     if track.recording_mbid
@@ -110,21 +136,30 @@ class WeeklyExplorationService:
                 )
 
                 cover_url: str | None = None
-                if release_group_mbid:
-                    cover_url = release_group_cover_url(release_group_mbid, size=250)
-                elif track.caa_release_mbid:
-                    cover_url = release_cover_url(track.caa_release_mbid, size=250)
 
-                tracks.append(WeeklyExplorationTrack(
-                    title=track.title,
-                    artist_name=track.creator,
-                    album_name=track.album,
-                    recording_mbid=track.recording_mbid,
-                    artist_mbid=artist_mbid,
-                    release_group_mbid=release_group_mbid or None,
-                    cover_url=cover_url,
-                    duration_ms=track.duration_ms,
-                ))
+                if release_group_mbid:
+                    cover_url = release_group_cover_url(
+                        release_group_mbid,
+                        size=250,
+                    )
+                elif track.caa_release_mbid:
+                    cover_url = release_cover_url(
+                        track.caa_release_mbid,
+                        size=250,
+                    )
+
+                tracks.append(
+                    WeeklyExplorationTrack(
+                        title=track.title,
+                        artist_name=track.creator,
+                        album_name=track.album,
+                        recording_mbid=track.recording_mbid,
+                        artist_mbid=artist_mbid,
+                        release_group_mbid=release_group_mbid or None,
+                        cover_url=cover_url,
+                        duration_ms=track.duration_ms,
+                    )
+                )
 
             return WeeklyExplorationSection(
                 title=playlist.title,
@@ -132,6 +167,7 @@ class WeeklyExplorationService:
                 tracks=tracks,
                 source_url=newest.get("identifier", ""),
             )
+
         except Exception as exc:  # noqa: BLE001
             logger.warning("Failed to build weekly exploration: %s", exc)
             return None

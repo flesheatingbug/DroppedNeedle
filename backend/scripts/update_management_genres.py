@@ -14,7 +14,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from core.config import get_settings
 
-SOURCE_URL = "https://musicbrainz.org/ws/2/genre/all?fmt=txt"
+SOURCE_URL = "http://192.168.1.50:5000/ws/2/genre/all?fmt=txt"
 
 
 def main() -> None:

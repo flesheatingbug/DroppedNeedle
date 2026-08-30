@@ -45,7 +45,7 @@ class _StatusClient:
 async def test_connect_and_protocol_errors_fail_after_one_attempt(
     reset_musicbrainz_transport, monkeypatch, error_type
 ) -> None:
-    request = httpx.Request("GET", "https://musicbrainz.org/ws/2/artist")
+    request = httpx.Request("GET", "http://192.168.1.50:5000/ws/2/artist")
     client = _RaisingClient(error_type("blocked", request=request))
     monkeypatch.setattr(mb_base, "_http_client", client)
 

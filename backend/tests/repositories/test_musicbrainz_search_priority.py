@@ -140,7 +140,7 @@ async def test_release_edition_search_uses_dedicated_cache():
 
 @pytest.mark.asyncio
 async def test_release_edition_search_normalizes_provider_failures():
-    request = httpx.Request("GET", "https://musicbrainz.org/ws/2/release")
+    request = httpx.Request("GET", "http://192.168.1.50:5000/ws/2/release")
     with patch(
         "repositories.musicbrainz_album.mb_api_get",
         AsyncMock(

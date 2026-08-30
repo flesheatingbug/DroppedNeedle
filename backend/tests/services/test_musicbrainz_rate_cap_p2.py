@@ -29,7 +29,7 @@ from repositories.musicbrainz_base import (
 from repositories.musicbrainz_repository import MusicBrainzRepository
 
 MIRROR = "https://mirror.example.com/ws/2"
-OFFICIAL = "https://musicbrainz.org/ws/2"
+OFFICIAL = "http://192.168.1.50:5000/ws/2"
 
 
 class _FakeSemaphore:

@@ -140,7 +140,7 @@ async def test_malformed_json_raises_invalid_payload_without_retry(monkeypatch):
                 200,
                 content=b"{not-json",
                 headers={"content-type": "application/json"},
-                request=_httpx.Request("GET", "https://musicbrainz.org/ws/2/x"),
+                request=_httpx.Request("GET", "http://192.168.1.50:5000/ws/2/x"),
             )
 
     from repositories import musicbrainz_base

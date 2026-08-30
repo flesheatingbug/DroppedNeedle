@@ -1,7 +1,7 @@
 # Self-hosting a MusicBrainz mirror for DroppedNeedle
 
 DroppedNeedle talks to MusicBrainz over the standard `ws/2` web service. By default it
-points at `https://musicbrainz.org/ws/2` and honors MetaBrainz's published 1 request/second
+points at `http://192.168.1.50:5000/ws/2` and honors MetaBrainz's published 1 request/second
 limit. If you run your **own full MusicBrainz mirror** (the official
 [metabrainz/musicbrainz-docker](https://github.com/metabrainz/musicbrainz-docker) stack),
 you can point DroppedNeedle's existing *Settings → MusicBrainz* API URL at it instead. The
