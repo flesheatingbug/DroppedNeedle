@@ -35,8 +35,6 @@ from infrastructure.persistence._database import PersistenceBase
 
 logger = logging.getLogger(__name__)
 
-OFFICIAL_MB_API_BASE = "http://192.168.1.50:5000/ws/2"
-
 _SOURCE_MB_RECORDING_LOOKUP = "mb-recording-lookup"
 
 
@@ -206,8 +204,14 @@ class MbCanonicalStore(PersistenceBase):
                 f"AND from_mbid_lower IN ({placeholders})"
             )
             if official_source_only:
-                sql += " AND source_host = ?"
-                params.append(OFFICIAL_MB_API_BASE)
+                from api.v1.schemas.settings import is_official_musicbrainz
+                # Only rows captured from the real MusicBrainz host qualify
+                # for the identity-lane official-source gate.
+                official_hosts = ("musicbrainz.org", "www.musicbrainz.org")
+                sql += " AND source_host IN (?, ?)"
+                params.extend(
+                    f"https://{host}/ws/2" for host in official_hosts
+                )
             rows = conn.execute(sql, params).fetchall()
             return {
                 str(row["from_mbid_lower"]): str(row["to_mbid_lower"]) for row in rows

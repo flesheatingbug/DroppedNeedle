@@ -15,7 +15,7 @@ from infrastructure.observability.provider_counters import (
 )
 from repositories.edition_policy import recall_key
 
-_mb_api_base: str = "http://192.168.1.50:5000/ws/2"
+_mb_api_base: str = "https://musicbrainz.org/ws/2"
 
 
 def get_mb_api_base() -> str:

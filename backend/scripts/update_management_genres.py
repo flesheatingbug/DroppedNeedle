@@ -13,8 +13,7 @@ import json
 from pathlib import Path
 from urllib.request import Request, urlopen
 from core.config import get_settings
-
-SOURCE_URL = "http://192.168.1.50:5000/ws/2/genre/all?fmt=txt"
+from repositories.musicbrainz_base import get_mb_api_base
 
 
 def main() -> None:
@@ -29,8 +28,9 @@ def main() -> None:
     )
     args = parser.parse_args()
     existing = json.loads(args.asset.read_text(encoding="utf-8"))
+    source_url = f"{get_mb_api_base()}/genre/all?fmt=txt"
     request = Request(
-        SOURCE_URL,
+        source_url,
         headers={"User-Agent": get_settings().get_user_agent()},
     )
     with urlopen(request, timeout=30) as response:  # noqa: S310 - fixed HTTPS URL
@@ -42,7 +42,7 @@ def main() -> None:
             }
         )
     payload = {
-        "source": SOURCE_URL,
+        "source": source_url,
         "retrieved_at": date.today().isoformat(),
         "source_note": existing["source_note"],
         "genres": names,
